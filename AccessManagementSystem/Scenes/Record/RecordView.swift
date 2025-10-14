@@ -8,8 +8,19 @@
 import SwiftUI
 
 struct RecordView: View {
-    @State private var showRegisterView = false // ✅ 모달 표시 상태
-
+    
+    enum ActiveSheet: Identifiable {
+        case register
+        case manage
+        case user
+        
+        var id: Int {
+            hashValue
+        }
+    }
+    
+    @State private var activeSheet: ActiveSheet? = nil
+    
     var body: some View {
         NavigationStack {
             VStack {
@@ -24,17 +35,18 @@ struct RecordView: View {
                         .font(.headline)
                         .foregroundColor(.primary)
                 }
-
+                
                 // 우측 설정 메뉴
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
-                        // ✅ 카드 등록 → RegisterView 모달 표시
                         Button("출입 카드 등록") {
-                            showRegisterView = true
+                            activeSheet = .register
                         }
-
                         Button("출입 카드 관리") {
-                            print("카드 관리 선택됨")
+                            activeSheet = .manage
+                        }
+                        Button("사용자 등록") {
+                            activeSheet = .user
                         }
                     } label: {
                         Image(systemName: "gearshape")
@@ -42,9 +54,15 @@ struct RecordView: View {
                     }
                 }
             }
-            // ✅ RegisterView 모달 연결
-            .sheet(isPresented: $showRegisterView) {
-                RegisterView()
+            .sheet(item: $activeSheet) { sheet in
+                switch sheet {
+                case .register:
+                    RegisterView()
+                case .manage:
+                    RegisterView()
+                case .user:
+                    UserView() 
+                }
             }
         }
     }
