@@ -8,8 +8,9 @@
 import SwiftUI
 
 struct RegisterView: View {
-    @StateObject private var bluetoothVM = BluetoothViewModel()
-
+    @StateObject private var registerVM = BluetoothViewModel()
+    @Environment(\.dismiss) private var dismiss
+    
     var body: some View {
         VStack {
             // 상단 제목
@@ -20,13 +21,13 @@ struct RegisterView: View {
                 .padding(.vertical, 10)
 
             // BLE 기기 리스트
-            List(bluetoothVM.devices) { device in
+            List(registerVM.devices) { device in
                 HStack {
                     Text(device.name)
                         .font(.body)
                     Spacer()
                     Button("연결") {
-                        bluetoothVM.connect(to: device)
+                        registerVM.connect(to: device)
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(.blue)
@@ -36,7 +37,7 @@ struct RegisterView: View {
             .listStyle(.insetGrouped)
 
             // 상태 표시
-            Text(bluetoothVM.statusMessage)
+            Text(registerVM.statusMessage)
                 .font(.footnote)
                 .foregroundColor(.gray)
                 .padding(.vertical, 8)
@@ -44,6 +45,14 @@ struct RegisterView: View {
         .padding()
         .presentationDetents([.medium, .large]) // 모달 높이 조정
         .presentationDragIndicator(.visible)    // 드래그 표시선
+        .onChange(of: registerVM.isRegistered) { _, newValue in
+            if newValue {
+                Task {
+                    try? await Task.sleep(for: .seconds(1)) // 1초 대기 (연결 해제 완료 대기)
+                    dismiss()
+                }
+            }
+        }
     }
 }
 

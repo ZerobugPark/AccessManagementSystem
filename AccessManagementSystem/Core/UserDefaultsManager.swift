@@ -30,11 +30,14 @@ import Foundation
 enum UserDefaultManager {
     enum Key: String {
         case userInfo
-
+        case pairedDevice
     }
     
     @AMSUserDefaultManager(key: Key.userInfo.rawValue, empty: Data())
     static var userInfo: Data
+    
+    @AMSUserDefaultManager(key: Key.pairedDevice.rawValue, empty: Data())
+    static var pairedDevice: Data
 
 }
 
