@@ -11,7 +11,7 @@ import SwiftUI
 struct AccessManagementSystemApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            TabController()
         }
     }
 }

@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct RecordView: View {
+    @State private var showRegisterView = false // ✅ 모달 표시 상태
+
     var body: some View {
         NavigationStack {
             VStack {
@@ -26,20 +28,23 @@ struct RecordView: View {
                 // 우측 설정 메뉴
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
-                        Button("카드 등록") {
-                            print("카드 등록 선택됨")
-                            // TODO: 카드 등록 화면으로 이동하도록 연결 가능
+                        // ✅ 카드 등록 → RegisterView 모달 표시
+                        Button("출입 카드 등록") {
+                            showRegisterView = true
                         }
 
-                        Button("카드 관리") {
+                        Button("출입 카드 관리") {
                             print("카드 관리 선택됨")
-                            // TODO: 카드 관리 화면으로 이동하도록 연결 가능
                         }
                     } label: {
                         Image(systemName: "gearshape")
                             .imageScale(.large)
                     }
                 }
+            }
+            // ✅ RegisterView 모달 연결
+            .sheet(isPresented: $showRegisterView) {
+                RegisterView()
             }
         }
     }
