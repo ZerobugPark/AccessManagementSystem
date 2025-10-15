@@ -11,7 +11,6 @@ struct RecordView: View {
     
     enum ActiveSheet: Identifiable {
         case register
-        case manage
         case user
         
         var id: Int {
@@ -41,24 +40,19 @@ struct RecordView: View {
                     Menu {
                         Button("출입 카드 등록") {
                             activeSheet = .register
-                        }
-                        Button("출입 카드 관리") {
-                            activeSheet = .manage
-                        }
+                        } 
                         Button("사용자 등록") {
                             activeSheet = .user
                         }
                     } label: {
                         Image(systemName: "gearshape")
-                            .imageScale(.large)
+                            .imageScale(.medium)
                     }
                 }
             }
             .sheet(item: $activeSheet) { sheet in
                 switch sheet {
                 case .register:
-                    RegisterView()
-                case .manage:
                     RegisterView()
                 case .user:
                     UserView() 

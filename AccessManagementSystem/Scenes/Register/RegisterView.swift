@@ -34,7 +34,7 @@ struct RegisterView: View {
                 }
                 .padding(.vertical, 4)
             }
-            .listStyle(.insetGrouped)
+            
 
             // 상태 표시
             Text(registerVM.statusMessage)
@@ -43,8 +43,10 @@ struct RegisterView: View {
                 .padding(.vertical, 8)
         }
         .padding()
-        .presentationDetents([.medium, .large]) // 모달 높이 조정
-        .presentationDragIndicator(.visible)    // 드래그 표시선
+        .background(Color(.systemGray6)) 
+        .ignoresSafeArea()               
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
         .onChange(of: registerVM.isRegistered) { _, newValue in
             if newValue {
                 Task {

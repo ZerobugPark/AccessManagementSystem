@@ -12,8 +12,12 @@ struct UserView: View {
     @State private var name = ""
     @State private var department = ""
     @State private var position = ""
-    @State private var cardID = CardIDGenerator.makeCardID()
+    @State private var cardID = ""
     @State private var showAlert = false
+    
+    init() {
+        self.cardID = makeCardID()
+    }
 
     var body: some View {
         VStack(spacing: 24) {
@@ -21,8 +25,9 @@ struct UserView: View {
             ZStack {
                 // 중앙 제목
                 Text("사용자 등록")
-                    .font(.title3)
+                    .font(.headline)
                     .bold()
+                    .padding(.bottom, 5)
 
                 // 우측 상단 닫기 버튼
                 HStack {
@@ -31,7 +36,7 @@ struct UserView: View {
                         dismiss() // ✅ 모달 닫기
                     } label: {
                         Image(systemName: "xmark")
-                            .imageScale(.large)
+                            .imageScale(.medium)
                             .foregroundColor(.gray)
                     }
                     .padding(.trailing, 16)
@@ -50,15 +55,13 @@ struct UserView: View {
             // 자동 생성된 카드 ID 표시
             VStack(alignment: .leading, spacing: 6) {
                 Text("카드 ID (자동 생성)")
-                    .font(.caption)
+                    .font(.subheadline)
                     .foregroundColor(.gray)
                 Text(cardID)
-                    .font(.callout)
-                    .bold()
-                    .padding(12)
+                    .padding(14)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(Color(.systemGray6))
-                    .cornerRadius(12)
+                    .cornerRadius(16)
             }
             .padding(.horizontal)
 
@@ -68,9 +71,9 @@ struct UserView: View {
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color.blue)
+                    .background(.appPrimary)
                     .foregroundColor(.white)
-                    .cornerRadius(12)
+                    .cornerRadius(16)
             }
             .padding(.horizontal)
             .padding(.top, 10)
@@ -87,8 +90,12 @@ struct UserView: View {
         .ignoresSafeArea(edges: .bottom)
     }
 
-    // MARK: - 등록 로직
-    private func registerUser() {
+
+}
+
+private extension UserView {
+    /// User Register
+    func registerUser() {
         
         let user = User(
             name: name,
@@ -96,7 +103,6 @@ struct UserView: View {
             company: "유니온바이오메트릭스",
             cardID: cardID
         )
-        
         
         do {
             let encoded = try JSONEncoder().encode(user)
@@ -107,9 +113,16 @@ struct UserView: View {
 
         showAlert = true
     }
+    
+    ///카드 ID 자동 생성기
+    func makeCardID() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyyMMdd-HHmmss"
+        let datePart = formatter.string(from: Date())
+        return "CARD-\(datePart)"
+    }
 }
 
-// MARK: - 커스텀 라벨 + 텍스트필드
 struct LabeledTextField: View {
     let label: String
     @Binding var text: String
@@ -127,15 +140,7 @@ struct LabeledTextField: View {
     }
 }
 
-// MARK: - 카드 ID 자동 생성기
-struct CardIDGenerator {
-    static func makeCardID() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyyMMdd-HHmmss"
-        let datePart = formatter.string(from: Date())
-        return "CARD-\(datePart)"
-    }
-}
+
 
 #Preview {
     UserView()
