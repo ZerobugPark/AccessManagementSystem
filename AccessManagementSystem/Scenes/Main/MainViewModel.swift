@@ -128,7 +128,7 @@ final class MainViewModel: NSObject, ObservableObject, CBCentralManagerDelegate,
                     peripheral.setNotifyValue(true, for: char) // 데이터 수신 허용
                     // ✅ 연결 직후 아두이노에 register 요청
                     Task {
-                        await sendChunked("AUTH:" + (userInfo?.cardID ?? ""))    
+                        await sendChunked("IV:\(CryptionKey.iv)")    
                     }
                     
                 }
@@ -169,6 +169,22 @@ final class MainViewModel: NSObject, ObservableObject, CBCentralManagerDelegate,
                 print("📩 수신: \(text)")
                 
                 switch text.uppercased() {
+                case "IV_UPDATED":
+                    
+                    if let encrypted = AES128CBC.encrypt(userInfo?.cardID ?? "", key: CryptionKey.secretKey, iv: CryptionKey.iv) {
+                        print("🔒 암호문 (Base64):", encrypted)
+
+                        // 복호화 테스트
+                        if let data = Data(base64Encoded: encrypted), let decrypted = AES128CBC.decrypt(data, key: CryptionKey.secretKey, iv: CryptionKey.iv) {
+                            print("🔓 복호화 결과:", decrypted)
+                        } 
+                        
+                        let payload = "AUTH:\(encrypted)"
+                        await sendChunked(payload)
+                    } else {
+                        print("암호화 실패")
+                    }
+                    
                 case "APPROVE":
                     print("승인 되었습니다.")
                     Task {

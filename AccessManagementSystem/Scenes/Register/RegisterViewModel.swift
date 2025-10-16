@@ -129,8 +129,21 @@ final class BluetoothViewModel: NSObject, ObservableObject, CBCentralManagerDele
                 case "READY_FOR_DATA":
                     let user = User.loadFromUserDefaults()
                     if let user = user {
-                        let payload = "USER:\(user.cardID)"
-                        await sendChunked(payload)
+                        
+                        if let encrypted = AES128CBC.encrypt(user.cardID, key: CryptionKey.secretKey, iv: CryptionKey.iv) {
+                            print("🔒 암호문 (Base64):", encrypted)
+
+                            // 복호화 테스트
+                            if let data = Data(base64Encoded: encrypted), let decrypted = AES128CBC.decrypt(data, key: CryptionKey.secretKey, iv: CryptionKey.iv) {
+                                print("🔓 복호화 결과:", decrypted)
+                            } 
+                            
+                            let payload = "USER:\(encrypted)"
+                            await sendChunked(payload)
+                        } else {
+                            print("암호화 실패")
+                        }
+                        
                         statusMessage = "👤 사용자 정보 전송 중..."
                     } else {
                         statusMessage = "⚠️ 사용자 정보가 없습니다."
@@ -171,29 +184,35 @@ final class BluetoothViewModel: NSObject, ObservableObject, CBCentralManagerDele
     // MARK: - 전송
     private func send(_ text: String) {
         if let peripheral = connectedPeripheral,
-           let char = targetCharacteristic,
-           let data = (text + "\r\n").data(using: .utf8)  {
-            peripheral.writeValue(data, for: char, type: .withResponse)
-            print("📤 전송: \(text)")
+           let char = targetCharacteristic {
+            if let data = (text + "\n").data(using: .utf8) { 
+                peripheral.writeValue(data, for: char, type: .withResponse)
+                print("📤 전송: \(text)")
+            }
         }
-    } 
+    }
     
     private func sendChunked(_ text: String) async {
         guard let peripheral = connectedPeripheral,
               let char = targetCharacteristic else { return }
-        
-        let message = text + "\r\n"               // HM-10이 CRLF를 한 줄 끝으로 인식
-        let data = Data(message.utf8)
-        let mtu = 20                              // HM-10 실제 데이터 한도
+
+        let data = Data(text.utf8)
+        let mtu = 20
         var offset = 0
-        
+
         while offset < data.count {
             let end = min(offset + mtu, data.count)
             let chunk = data.subdata(in: offset..<end)
             peripheral.writeValue(chunk, for: char, type: .withResponse)
             print("📤 Chunk (\(chunk.count) bytes): \(String(data: chunk, encoding: .utf8) ?? "")")
-            try? await Task.sleep(nanoseconds: 50_000)                        // 50 ms 대기로 버퍼 안정화
+            try? await Task.sleep(nanoseconds: 50_000) // 50ms delay
             offset = end
+        }
+
+        // ✅ 모든 chunk 전송 후 줄바꿈(\r\n) 한 번만 보내기
+        if let newline = "\r\n".data(using: .utf8) {
+            peripheral.writeValue(newline, for: char, type: .withResponse)
+            print("📤 (마지막 줄바꿈 전송)")
         }
     }
     
