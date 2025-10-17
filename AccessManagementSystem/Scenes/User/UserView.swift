@@ -14,11 +14,9 @@ struct UserView: View {
     @State private var position = ""
     @State private var cardID = ""
     @State private var showAlert = false
-    
-    init() {
-        self.cardID = makeCardID()
-    }
 
+    var onCompleted: () -> (Void)
+    
     var body: some View {
         VStack(spacing: 24) {
             // 상단 헤더 (제목 + 닫기 버튼)
@@ -82,10 +80,16 @@ struct UserView: View {
         }
         .alert("등록 완료", isPresented: $showAlert) {
             Button("확인", role: .cancel) {
+                onCompleted()
                 dismiss() // ✅ 등록 완료 후 자동 닫기 (선택 사항)
             }
         } message: {
             Text("사용자 \(name) 님이 등록되었습니다.")
+        }
+        .onAppear {
+            if cardID.isEmpty {
+                cardID = makeCardID()
+            }
         }
         .ignoresSafeArea(edges: .bottom)
     }
@@ -103,7 +107,7 @@ private extension UserView {
             company: "유니온바이오메트릭스",
             cardID: cardID
         )
-        
+        print("regi", user)
         do {
             let encoded = try JSONEncoder().encode(user)
             UserDefaultManager.userInfo = encoded
@@ -143,5 +147,7 @@ struct LabeledTextField: View {
 
 
 #Preview {
-    UserView()
+    UserView {
+        
+    }
 }

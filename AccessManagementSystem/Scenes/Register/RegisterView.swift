@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct RegisterView: View {
-    @StateObject private var registerVM = BluetoothViewModel()
+    @StateObject private var registerVM = RegisterViewModel()
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {

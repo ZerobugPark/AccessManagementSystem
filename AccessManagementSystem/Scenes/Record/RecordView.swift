@@ -55,7 +55,8 @@ struct RecordView: View {
                 case .register:
                     RegisterView()
                 case .user:
-                    UserView() 
+                    EmptyView()
+                    //UserView() 
                 }
             }
         }

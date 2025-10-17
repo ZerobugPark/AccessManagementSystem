@@ -17,7 +17,7 @@ struct MainView: View {
         get { viewModel.userInfo }
     }
     
-    private var device:  PairedDevice? {
+    private var device:  BluetoothDevice? {
         get { viewModel.pairedDevice }
     }
     
@@ -126,7 +126,9 @@ struct MainView: View {
                 case .register:
                     RegisterView()
                 case .user:
-                    UserView() 
+                    UserView {
+                        viewModel.updateUserInfo()
+                    } 
                 }
             }
             

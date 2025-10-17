@@ -10,7 +10,7 @@ import CoreBluetooth
 import Combine
 
 final class MainViewModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate {
-    @Published var pairedDevice: PairedDevice?
+    @Published var pairedDevice: BluetoothDevice?
     @Published var userInfo: User?
     @Published var isConnected: Bool = false
     @Published var statusMessage: String = "대기 중..."
@@ -25,14 +25,14 @@ final class MainViewModel: NSObject, ObservableObject, CBCentralManagerDelegate,
     /// NSObject 채택시, 오버라이드 필요
     override init() {
         super.init()
-        central = CBCentralManager(delegate: self, queue: nil)
+       // central = CBCentralManager(delegate: self, queue: nil)
         userInfo = User.loadFromUserDefaults()
-        loadPairedDevice()
+        //loadPairedDevice()
     }
     
     // MARK: - 저장된 장치 불러오기
     func loadPairedDevice() {
-        pairedDevice = PairedDevice.loadFromUserDefaults()
+        pairedDevice = BluetoothDevice.loadFromUserDefaults()
     }
     
     // MARK: - 블루투스 상태 변화
@@ -235,6 +235,14 @@ final class MainViewModel: NSObject, ObservableObject, CBCentralManagerDelegate,
         if let peripheral = connectedPeripheral {
             central.cancelPeripheralConnection(peripheral)
         }
+    }
+    
+}
+
+extension MainViewModel {
+    
+    func updateUserInfo() {
+        userInfo = User.loadFromUserDefaults()
     }
     
 }

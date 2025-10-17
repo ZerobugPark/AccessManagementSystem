@@ -15,9 +15,22 @@
 		D048F7F62E9E6FC400610C17 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		D048FE792EA0C70700610C17 /* Exceptions for "AccessManagementSystem" folder in "AccessManagementSystem" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = D048F7E12E9E295900610C17 /* AccessManagementSystem */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		D048F7E42E9E295900610C17 /* AccessManagementSystem */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				D048FE792EA0C70700610C17 /* Exceptions for "AccessManagementSystem" folder in "AccessManagementSystem" target */,
+			);
 			path = AccessManagementSystem;
 			sourceTree = "<group>";
 		};
@@ -263,7 +276,8 @@
 				DEVELOPMENT_TEAM = 9ZR9M5J9M6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = YES;
+				INFOPLIST_FILE = AccessManagementSystem/Info.plist;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "\"This app uses Bluetooth to stay connected to nearby access devices.\"\n";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -300,7 +314,8 @@
 				DEVELOPMENT_TEAM = 9ZR9M5J9M6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = YES;
+				INFOPLIST_FILE = AccessManagementSystem/Info.plist;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "\"This app uses Bluetooth to stay connected to nearby access devices.\"\n";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
