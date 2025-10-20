@@ -7,12 +7,13 @@
 
 import SwiftUI
 import Combine
+import SwiftData
 
 
 struct MainView: View {
     @StateObject private var viewModel: MainViewModel
     @StateObject private var bleVM: AutoConnectViewModel
-    
+    @Environment(\.modelContext) private var context
     
     @State private var activeSheet: ActiveSheet? = nil
      
@@ -41,8 +42,6 @@ struct MainView: View {
                             Text("부서: \(user.department)")
                                 .font(.callout.bold())
                             Text("이름: \(user.name)")
-                                .font(.callout.bold())
-                            Text("직급: \(user.position)")
                                 .font(.callout.bold())
                         }
                     } else {
@@ -140,11 +139,11 @@ struct MainView: View {
                             if bleVM.isConnected {
                                 HStack(spacing: 40) {
                                     AttendanceActionButton(action: .checkIn) {
-                                        print("출근 버튼 눌림")
+                                        saveWorkLog(content: "출근")
                                     }
 
                                     AttendanceActionButton(action: .checkOut) {
-                                        print("퇴근 버튼 눌림")
+                                        saveWorkLog(content: "퇴근")
                                     }
                                 }
                                 .offset(y: -50)
@@ -158,9 +157,6 @@ struct MainView: View {
         
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-//            .onAppear {
-//                viewModel.loadPairedDevice()
-//            }
             .toolbar {  mainToolbar() }
             .sheet(item: $activeSheet) { sheet in
                 switch sheet {
@@ -172,6 +168,8 @@ struct MainView: View {
                     UserView {
                         viewModel.updateUserInfo()
                     } 
+                case .record:
+                    RecordView()
                 }
             }
             
@@ -185,11 +183,25 @@ private extension MainView {
     enum ActiveSheet: Identifiable {
         case register
         case user
+        case record
         
         var id: Int {
             hashValue
         }
     }
+    
+    func saveWorkLog(content: String) {
+        let log = WorkLog(content: content)
+        context.insert(log)
+        
+        do {
+            try context.save()  // 영구 저장
+            bleVM.savedWorkLog()
+        } catch {
+            print("❌ 저장 실패:", error)
+        }
+    }
+    
 }
 
 // MARK: Component 분리 
@@ -254,12 +266,16 @@ private extension MainView {
         
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
+                Button("출입 관리 기록") {
+                    activeSheet = .record
+                }
                 Button("출입 카드 등록") {
                     activeSheet = .register
                 }
                 Button("사용자 등록") {
                     activeSheet = .user
                 }
+     
             } label: {
                 Image(systemName: "gearshape")
                     .imageScale(.medium)

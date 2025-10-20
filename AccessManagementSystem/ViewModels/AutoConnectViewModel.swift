@@ -14,7 +14,7 @@ final class AutoConnectViewModel: ObservableObject {
     
     @Published var isConnected: Bool = false
     @Published var statusMessage: String = "대기 중..."
-    @Published var remainingTime: Int = 60  
+    @Published var remainingTime: Int = 30  
     
     /// Private method
     private let bleManager = BluetoothManager.shared
@@ -36,6 +36,27 @@ final class AutoConnectViewModel: ObservableObject {
         self.devicePublisher = devicePublisher
         
         setupBindings()
+    }
+    
+    func savedWorkLog() {
+        self.countdownCancellable?.cancel()   
+        self.isConnected = false
+        Task {
+            
+            
+            
+            if remainingTime > 20 {
+                let second = remainingTime - 20
+                try? await Task.sleep(for: .seconds(second))
+            } 
+            self.bleManager.disconnect()    
+                
+             
+            
+        }
+        
+        
+     
     }
     
     
@@ -166,7 +187,7 @@ private extension AutoConnectViewModel {
     }
     
     func startAutoDisconnectCountdown() {
-        remainingTime = 60
+        remainingTime = 30
         countdownCancellable = Timer.publish(every: 1, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] _ in
@@ -181,8 +202,7 @@ private extension AutoConnectViewModel {
             }
     }
 
-    
-    
+
     
 }
     

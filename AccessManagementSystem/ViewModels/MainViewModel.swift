@@ -9,6 +9,7 @@ import Foundation
 import CoreBluetooth
 import Combine
 
+
 final class MainViewModel:  ObservableObject {
     @Published var pairedDevice: BluetoothDevice?
     @Published var userInfo: User?
@@ -37,5 +38,7 @@ extension MainViewModel {
     func updateCardInfo() {
         pairedDevice = BluetoothDevice.loadFromUserDefaults()
     }
+    
+ 
     
 }

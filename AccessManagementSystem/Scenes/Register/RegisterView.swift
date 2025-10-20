@@ -58,6 +58,9 @@ struct RegisterView: View {
                 }
             }
         }
+        .onDisappear { 
+            registerVM.disconnect()
+        }
     }
 }
 

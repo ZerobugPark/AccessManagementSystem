@@ -6,62 +6,41 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct RecordView: View {
     
-    enum ActiveSheet: Identifiable {
-        case register
-        case user
-        
-        var id: Int {
-            hashValue
-        }
-    }
+    @Environment(\.modelContext) private var context
     
-    @State private var activeSheet: ActiveSheet? = nil
+    // 저장된 전체 WorkLog 가져오기
+    private var allLogs: [WorkLog] {
+         let descriptor = FetchDescriptor<WorkLog>(
+             sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+         )
+         return (try? context.fetch(descriptor)) ?? []
+     }
     
     var body: some View {
-        NavigationStack {
-            VStack {
-                Spacer()
-                Text("출입 기록 내용이 여기에 표시됩니다.")
-                Spacer()
-            }
-            .toolbar {
-                // 중앙 타이틀
-                ToolbarItem(placement: .principal) {
-                    Text("출입관리기록")
+        List(allLogs) { log in
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(log.content)
                         .font(.headline)
-                        .foregroundColor(.primary)
+                    Spacer()
+                    Text(log.createdAt, format: Date.FormatStyle
+                            .dateTime
+                            .year()
+                            .month()
+                            .day()
+                            .hour()
+                            .minute())
                 }
+                .padding(.horizontal)
                 
-                // 우측 설정 메뉴
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Menu {
-                        Button("출입 카드 등록") {
-                            activeSheet = .register
-                        } 
-                        Button("사용자 등록") {
-                            activeSheet = .user
-                        }
-                    } label: {
-                        Image(systemName: "gearshape")
-                            .imageScale(.medium)
-                    }
-                }
             }
-            .sheet(item: $activeSheet) { sheet in
-                switch sheet {
-                case .register:
-                    RegisterView {
-                        
-                    }
-                case .user:
-                    EmptyView()
-                    //UserView() 
-                }
-            }
+            .padding(.vertical, 4)
         }
+        .navigationTitle("출입 기록")
     }
 }
 

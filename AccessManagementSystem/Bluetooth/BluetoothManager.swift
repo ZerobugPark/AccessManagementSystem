@@ -166,8 +166,8 @@ extension BluetoothManager: CBCentralManagerDelegate {
         
         if UIApplication.shared.applicationState == .background {
             let content = UNMutableNotificationContent()
-            content.title = "BLE 연결됨"
-            content.body = "디바이스 \(peripheral.name ?? "Unknown") 연결 완료"
+            content.title = "유니온 바이오메트릭스"
+            content.body = "\(peripheral.name ?? "Unknown") 연결 완료"
             content.sound = .default
 
             let request = UNNotificationRequest(
