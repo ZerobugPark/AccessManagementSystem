@@ -10,6 +10,8 @@ import SwiftUI
 struct RegisterView: View {
     @StateObject private var registerVM = RegisterViewModel()
     @Environment(\.dismiss) private var dismiss
+    var onCompleted: () -> (Void)
+    
     
     var body: some View {
         VStack {
@@ -51,6 +53,7 @@ struct RegisterView: View {
             if newValue {
                 Task {
                     try? await Task.sleep(for: .seconds(1)) // 1초 대기 (연결 해제 완료 대기)
+                    onCompleted()
                     dismiss()
                 }
             }
@@ -59,5 +62,7 @@ struct RegisterView: View {
 }
 
 #Preview {
-    RegisterView()
+    RegisterView {
+        
+    }
 }

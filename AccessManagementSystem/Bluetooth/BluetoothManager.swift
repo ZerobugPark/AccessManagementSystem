@@ -7,6 +7,7 @@
 
 import Combine
 import CoreBluetooth
+import UIKit
 
 enum BluetoothMode {
     case auto
@@ -103,7 +104,9 @@ extension BluetoothManager: CBCentralManagerDelegate {
         switch central.state {
         case .poweredOn:
             statusMessage = "블루투스 활성화됨"
-            startScan()
+            if mode == .auto {
+                startScan()    
+            } 
         case .poweredOff:
             statusMessage = "블루투스 꺼져 있음"
         case .unauthorized:
@@ -118,19 +121,17 @@ extension BluetoothManager: CBCentralManagerDelegate {
     
     /// 주변기기 탐색 (광고 패킷 수신)
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-        
         let rssiValue = Int(truncating: RSSI)
-        
         
         //RSSI 127 → BLE 표준에서 '측정 불가'
         guard rssiValue != BluetoothThreshold.rssiIgnoreValue else {
-            //print("RSSI=127 → 무시:", peripheral.name ?? "Unknown")
+            print("RSSI=127 → 무시:", peripheral.name ?? "Unknown")
             return
         }
         
         // 약한 신호 무시
         guard rssiValue >= BluetoothThreshold.rssiThresholdMin else {
-            //print("기준 이하 신호 신호 무시:", peripheral.name ?? "Unknown", "→", rssiValue)
+            print("기준 이하 신호 신호 무시:", peripheral.name ?? "Unknown", "→", rssiValue)
             return
         }
         
@@ -141,9 +142,8 @@ extension BluetoothManager: CBCentralManagerDelegate {
             }
         }
         
-
         discoveredPeripheral.send((peripheral, rssiValue)) // 구독측으로 데이터 전달   
-        
+         
         // 복원 후보 RSSI 갱신 (복원 시점용)
         if isRestoring,
            restoredPeripherals.contains(where: { $0.identifier == peripheral.identifier }) {
@@ -162,7 +162,22 @@ extension BluetoothManager: CBCentralManagerDelegate {
         peripheral.delegate = self
         //peripheral.discoverServices(nil) // 해당 장치의 GATT 서비스 목록 조회
         /// 해당 기기의 FFE0 서비스를 요청 (비동기)
-        peripheral.discoverServices([BluetoothUUID.serviceUART]) // FFE0: HM-10 GATT Service (UART(시리얼) 통신을 위한 서비스) 
+        peripheral.discoverServices([BluetoothUUID.serviceUART]) // FFE0: HM-10 GATT Service (UART(시리얼) 통신을 위한 서비스)
+        
+        if UIApplication.shared.applicationState == .background {
+            let content = UNMutableNotificationContent()
+            content.title = "BLE 연결됨"
+            content.body = "디바이스 \(peripheral.name ?? "Unknown") 연결 완료"
+            content.sound = .default
+
+            let request = UNNotificationRequest(
+                identifier: "BLEConnect_\(peripheral.identifier.uuidString)",
+                content: content,
+                trigger: nil // 즉시 발송
+            )
+            UNUserNotificationCenter.current().add(request)
+        }
+        
         
     }
     
@@ -179,7 +194,7 @@ extension BluetoothManager: CBCentralManagerDelegate {
             print("🔁 자동 모드 — Task 기반 재연결 시작")
 
             Task { [weak self] in
-                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                try? await Task.sleep(for: .seconds(1)) 
                 guard let self = self else { return }
                 startScan()
                 self.statusMessage = "자동 재연결 시도 중..."
@@ -197,37 +212,36 @@ extension BluetoothManager: CBCentralManagerDelegate {
     
     
     // MARK: 복원 
-    /// 복원 매니저 (앱이 배그라운드에서 깨어날때, 
+    /// 복원 매니저 (앱이 배그라운드에서 깨어날때) 
     func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
-    
-//        isRestoring = true
-//        
-//        guard let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral],
-//              !peripherals.isEmpty else { return }
-//        
-//        // DOOR 포함된 장치만 복원 후보
-//        restoredPeripherals = peripherals.filter {
-//            ($0.name ?? "").localizedCaseInsensitiveContains("DOOR")
-//        }
-//        
-//        guard !restoredPeripherals.isEmpty else {
-//            print("복원 가능한 목록이 없습니다")
-//            statusMessage = "복원 실패: DOOR 장치 없음"
-//            return 
-//        }
-//        
-//        print("복원 후보 목록:")
-//        restoredPeripherals.forEach { print(" -", $0.name ?? "Unknown", $0.identifier) }
-//        
-//        rssiMap.removeAll()
-//        statusMessage = " 복원 중..."
-//        
-//        // ✅ RSSI 재측정 (2초 스캔)
-//        central.scanForPeripherals(withServices: [BluetoothUUID.serviceUART], options: nil)
-//        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-//            central.stopScan()
-//            self.connectToStrongestPeripheral()
-//        }
+        print(#function)
+        isRestoring = true
+        
+        guard let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral],
+              !peripherals.isEmpty else { return }
+        
+        // DOOR 포함된 장치만 복원 후보
+        restoredPeripherals = peripherals.filter {
+            ($0.name ?? "").localizedCaseInsensitiveContains("DOOR")
+        }
+        
+        guard !restoredPeripherals.isEmpty else {
+            print("복원 가능한 목록이 없습니다")
+            statusMessage = "복원 실패: DOOR 장치 없음"
+            return 
+        }
+        
+        print("복원 후보 목록:")
+        restoredPeripherals.forEach { print(" -", $0.name ?? "Unknown", $0.identifier) }
+        
+        rssiMap.removeAll()
+        statusMessage = " 복원 중..."
+        
+        central.scanForPeripherals(withServices: [BluetoothUUID.serviceUART], options: nil)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            central.stopScan()
+            self.connectToStrongestPeripheral()
+        }
         
     }
     
@@ -305,15 +319,19 @@ private extension BluetoothManager {
         central.connect(targetPeripheral, options: nil)
     }
     
-    func startScan(for services: [CBUUID]? = [BluetoothUUID.serviceUART]) {
-        central.scanForPeripherals(withServices: nil, options: nil)
-        statusMessage = "스캔 중..."   
-    }
+ 
   
 }
 
 // MARK: - Public API
 extension BluetoothManager {
+    
+    
+    func startScan(for services: [CBUUID]? = [BluetoothUUID.serviceUART]) {
+        //central.scanForPeripherals(withServices: nil, options: nil)
+        central.scanForPeripherals(withServices: services, options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
+        statusMessage = "스캔 중..."   
+    }
     
     
     func stopScan() {

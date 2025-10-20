@@ -104,7 +104,7 @@ private extension UserView {
         let user = User(
             name: name,
             department: department,
-            company: "유니온바이오메트릭스",
+            position: position,
             cardID: cardID
         )
         print("regi", user)

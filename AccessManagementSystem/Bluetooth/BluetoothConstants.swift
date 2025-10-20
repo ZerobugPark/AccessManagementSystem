@@ -23,7 +23,7 @@ enum BluetoothCommand {
 
 // MARK: - BLE Connection Thresholds
 enum BluetoothThreshold {
-    static let rssiAutoConnectLimit = -35  // 자동 연결 최소 신호 세기 (~10cm)
+    static let rssiAutoConnectLimit = -55  // 자동 연결 최소 신호 세기 (~10cm)
     static let rssiThresholdMin = -100  // 약한 신호 무시
     static let rssiIgnoreValue = 127       // RSSI 무효 값 (스캔 필터링용)
 }

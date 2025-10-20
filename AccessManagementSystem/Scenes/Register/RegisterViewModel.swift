@@ -19,10 +19,14 @@ final class RegisterViewModel: ObservableObject {
     // MARK: Private
     private let bleManager = BluetoothManager.shared
     private var cancellables = Set<AnyCancellable>()
+    private var currnetDevice: BluetoothDevice? 
     
     init() {
-        setupBindings()
         bleManager.mode = .manual
+        bleManager.disconnect()
+        setupBindings()
+        bleManager.startScan()
+        
     
     }
     
@@ -32,6 +36,9 @@ final class RegisterViewModel: ObservableObject {
         case "READY_FOR_DATA":
             sendUserInfo()
         case "COMPLETE":
+            if let device = currnetDevice {
+                BluetoothDevice(peripheral: device.peripheral!, name: device.name, rssi: device.lastRSSI, serviceUUID: device.serviceUUID).saveToUserDefaults()
+            }
             isRegistered = true
             statusMessage = "등록 완료"
             bleManager.disconnect()
@@ -104,6 +111,7 @@ private extension RegisterViewModel {
 extension RegisterViewModel {
     func connect(to device: BluetoothDevice) {
         bleManager.connect(to: device.peripheral!)
+        currnetDevice = device
         statusMessage = "\(device.name) 연결 중..."
     }
 

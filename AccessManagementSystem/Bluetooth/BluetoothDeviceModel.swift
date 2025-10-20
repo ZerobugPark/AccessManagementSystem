@@ -111,7 +111,7 @@ enum BLEPayload {
 struct User: Codable {
     let name: String
     let department: String
-    let company: String
+    let position: String
     let cardID: String
 }
 

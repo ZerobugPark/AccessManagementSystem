@@ -53,7 +53,9 @@ struct RecordView: View {
             .sheet(item: $activeSheet) { sheet in
                 switch sheet {
                 case .register:
-                    RegisterView()
+                    RegisterView {
+                        
+                    }
                 case .user:
                     EmptyView()
                     //UserView() 

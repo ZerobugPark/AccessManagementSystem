@@ -6,20 +6,31 @@
 //
 
 import SwiftUI
+import Combine
 
-import SwiftUI
 
 struct MainView: View {
-    @StateObject private var viewModel = MainViewModel()
+    @StateObject private var viewModel: MainViewModel
+    @StateObject private var bleVM: AutoConnectViewModel
+    
+    
     @State private var activeSheet: ActiveSheet? = nil
+     
+    private var user: User? { get { viewModel.userInfo } }
+    private var device:  BluetoothDevice? { get { viewModel.pairedDevice } }
     
-    private var user: User? {
-        get { viewModel.userInfo }
+    init() {
+        
+        let main = MainViewModel()
+        _viewModel = StateObject(wrappedValue: main)
+        _bleVM = StateObject(
+            wrappedValue: AutoConnectViewModel(
+                userPublisher: main.$userInfo.compactMap { $0 }.eraseToAnyPublisher(),
+                devicePublisher: main.$pairedDevice.compactMap {$0}.eraseToAnyPublisher()
+            )
+        )
     }
     
-    private var device:  BluetoothDevice? {
-        get { viewModel.pairedDevice }
-    }
     
     var body: some View {
         NavigationStack {
@@ -27,9 +38,11 @@ struct MainView: View {
                 HStack(alignment: .top, spacing: 10) {
                     if let user {
                         HStack(alignment: .firstTextBaseline, spacing: 10) {
+                            Text("부서: \(user.department)")
+                                .font(.callout.bold())
                             Text("이름: \(user.name)")
                                 .font(.callout.bold())
-                            Text("부서: \(user.department)")
+                            Text("직급: \(user.position)")
                                 .font(.callout.bold())
                         }
                     } else {
@@ -55,11 +68,20 @@ struct MainView: View {
                         
                         VStack(spacing: 16) {
                             
-                            Text("출입 카드 목록")
-                                .font(.headline)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.top,30)
-                                .padding(.horizontal)
+                            HStack {
+                            
+                                Text("출입 카드 목록")
+                                    .font(.headline)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.top,30)
+                                    .padding(.horizontal)
+                                
+                                if bleVM.isConnected {
+                                    RemainingTimeView(remainingTime: bleVM.remainingTime)
+                                }
+                                
+                            }
+                            
                             
                             if let device {
                                 ZStack {
@@ -94,10 +116,15 @@ struct MainView: View {
                                                 .padding([.trailing, .bottom], 12)
                                         }
                                         .frame(width: 300, height: 180)
+                       
                                     }
+                                         
+                                    
                                 }
                                 .offset(y: 100)
                                 .padding()
+                                
+                              
                                 
                             } else {
                                 Spacer()
@@ -105,10 +132,24 @@ struct MainView: View {
                                     .font(.headline)
                                     .foregroundColor(.gray)
                                     .padding()
+                                
                             }
                             
                             Spacer()
                             
+                            if bleVM.isConnected {
+                                HStack(spacing: 40) {
+                                    AttendanceActionButton(action: .checkIn) {
+                                        print("출근 버튼 눌림")
+                                    }
+
+                                    AttendanceActionButton(action: .checkOut) {
+                                        print("퇴근 버튼 눌림")
+                                    }
+                                }
+                                .offset(y: -50)
+                            }
+                                
                            
                         }
                     }
@@ -117,14 +158,16 @@ struct MainView: View {
         
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .onAppear {
-                viewModel.loadPairedDevice()
-            }
+//            .onAppear {
+//                viewModel.loadPairedDevice()
+//            }
             .toolbar {  mainToolbar() }
             .sheet(item: $activeSheet) { sheet in
                 switch sheet {
                 case .register:
-                    RegisterView()
+                    RegisterView {
+                        
+                    }
                 case .user:
                     UserView {
                         viewModel.updateUserInfo()
@@ -145,6 +188,55 @@ private extension MainView {
         
         var id: Int {
             hashValue
+        }
+    }
+}
+
+// MARK: Component 분리 
+private extension MainView {
+    struct RemainingTimeView: View {
+        let remainingTime: Int
+        var body: some View {
+            Text("남은 시간: \(remainingTime)초")
+                .frame(maxWidth: .infinity, alignment: .trailing)
+                .font(.headline)
+                .padding(.top, 30)
+                .padding(.horizontal)
+        }
+    }
+    
+    enum AttendanceAction {
+        case checkIn   // 출근
+        case checkOut  // 퇴근
+
+        var title: String {
+            switch self {
+            case .checkIn: return "출근"
+            case .checkOut: return "퇴근"
+            }
+        }
+
+        var systemImage: String {
+            switch self {
+            case .checkIn: return "figure.walk"
+            case .checkOut: return "figure.run"
+            }
+        }
+    }
+
+    struct AttendanceActionButton: View {
+        let action: AttendanceAction
+        let onTap: () -> Void
+
+        var body: some View {
+            Button(action: onTap) {
+                Label(action.title, systemImage: action.systemImage)
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 12)
+                    .background(.appPrimary.opacity(0.1))
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .foregroundStyle(.appPrimary)
+            }
         }
     }
 }
