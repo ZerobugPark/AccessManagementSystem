@@ -26,7 +26,7 @@ struct AES128CBC {
                         CCCrypt(
                             CCOperation(kCCEncrypt),
                             CCAlgorithm(kCCAlgorithmAES128),
-                            // ✅ PKCS7 Padding 활성화
+                            /// PKCS7 Padding 활성화
                             CCOptions(kCCOptionPKCS7Padding),
                             keyPtr.baseAddress, kCCKeySizeAES128,
                             ivPtr.baseAddress,
@@ -39,8 +39,8 @@ struct AES128CBC {
             }
         }
 
-        print("평문 바이트 수:", dataToEncrypt.count)
-        print("블록 크기 단위로 자동 패딩됨 (PKCS7)")
+//        print("평문 바이트 수:", dataToEncrypt.count)
+//        print("블록 크기 단위로 자동 패딩됨 (PKCS7)")
 
         if cryptStatus == kCCSuccess {
             let encryptedData = buffer.prefix(numBytesEncrypted)

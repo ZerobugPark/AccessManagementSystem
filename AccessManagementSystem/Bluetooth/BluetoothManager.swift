@@ -15,6 +15,15 @@ enum BluetoothMode {
     case idle
 }
 
+/// 블루투스 연결 전체 흐름도
+/// connect() -Peripheral과 물리적 연결
+/// discoverServices() - 서비스 목록 요청 (FFE0 등)
+/// didDiscoverServices - Peripheral이 서비스 목록 응답
+/// discoverCharacteristics() - 서비스 내부의 특성(FFE1 등) 요청
+/// didDiscoverCharacteristicsFor - 특성 목록 응답 수신
+/// setNotifyValue(true) - Notify 수신 등록
+/// didUpdateValueFor -Peripheral이 Notify로 데이터 전송
+
 
 final class BluetoothManager: NSObject, ObservableObject {
     
@@ -55,50 +64,7 @@ final class BluetoothManager: NSObject, ObservableObject {
     
 }
 
-/// 블루투스 연결 전체 흐름도
-/// connect() -Peripheral과 물리적 연결
-/// discoverServices() - 서비스 목록 요청 (FFE0 등)
-/// didDiscoverServices - Peripheral이 서비스 목록 응답
-/// discoverCharacteristics() - 서비스 내부의 특성(FFE1 등) 요청
-/// didDiscoverCharacteristicsFor - 특성 목록 응답 수신
-/// setNotifyValue(true) - Notify 수신 등록
-/// didUpdateValueFor -Peripheral이 Notify로 데이터 전송
 
-//discoverServices()
-//→ “너(Peripheral)가 제공하는 서비스 목록(FFE0 등) 을 나(Central)에게 보내줘.”
-//didDiscoverServices
-//→ Peripheral이 실제로 그 서비스 정보를 보내왔을 때 실행되는 콜백
-//→ 이 시점에서 iOS는 peripheral.services 배열을 채워둠.
-//discoverCharacteristics(for: service)
-//→ “그 서비스(예: FFE0) 안에 있는 특성 목록(FFE1 등) 을 보내줘.”
-//didDiscoverCharacteristicsFor
-//→ Peripheral이 그 서비스의 특성 목록을 보내왔을 때 실행되는 콜백.
-//→ 이 시점에서 service.characteristics 배열이 채워짐.
-//
-//[Central (iPhone)]                    [Peripheral (HM-10)]
-//------------------------------------------------------------
-//connect() ──────────────────────────────▶ (연결 수락)
-//discoverServices([FFE0]) ───────────────▶ "FFE0 서비스 알려줘"
-//                               ◀───────── 서비스 정보 응답 (FFE0)
-//didDiscoverServices() 호출
-//discoverCharacteristics([FFE1], for: FFE0) ─▶ "FFE0 안의 FFE1 알려줘"
-//                               ◀───────── 특성 정보 응답 (FFE1)
-//didDiscoverCharacteristicsFor() 호출
-//setNotifyValue(true, for: FFE1) ─────────▶ "FFE1 Notify 켜줘"
-//                               ◀───────── OK
-//didUpdateValueFor() 호출 (데이터 수신)
-
-// MARK: CBCentralManagerDelegate
-// Central: 중앙 기기 (BEL 연결 요청 및 관리, iPhone)
-//Central (스마트폰, 앱)
-//   ↓ 스캔(scan)
-//   ↓ 연결(connect)
-//   ↓ 서비스 탐색(discoverServices)
-//   ↓ 데이터 요청(Read/Write/Notify)
-//Peripheral (BLE 기기, HM-10)
-//   ↑ 광고(advertise)
-//   ↑ 응답(response)
-//   ↑ 알림(notify)
 extension BluetoothManager: CBCentralManagerDelegate {
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         switch central.state {
@@ -161,9 +127,12 @@ extension BluetoothManager: CBCentralManagerDelegate {
         statusMessage = "연결됨: \(peripheral.name ?? "Unknown")"
         peripheral.delegate = self
         //peripheral.discoverServices(nil) // 해당 장치의 GATT 서비스 목록 조회
-        /// 해당 기기의 FFE0 서비스를 요청 (비동기)
-        peripheral.discoverServices([BluetoothUUID.serviceUART]) // FFE0: HM-10 GATT Service (UART(시리얼) 통신을 위한 서비스)
         
+        /// 해당 기기의 FFE0 서비스를 요청 (비동기)
+        /// FFE0: HM-10 GATT Service (UART(시리얼) 통신을 위한 서비스)
+        peripheral.discoverServices([BluetoothUUID.serviceUART])
+        
+        /// 알림 설정
         if UIApplication.shared.applicationState == .background {
             let content = UNMutableNotificationContent()
             content.title = "유니온 바이오메트릭스"
@@ -191,8 +160,6 @@ extension BluetoothManager: CBCentralManagerDelegate {
         switch mode {
         case .auto:
             statusMessage = "자동 재연결 대기 중..."
-            print("🔁 자동 모드 — Task 기반 재연결 시작")
-
             Task { [weak self] in
                 try? await Task.sleep(for: .seconds(1)) 
                 guard let self = self else { return }
