@@ -88,7 +88,7 @@ struct MainView: View {
                 switch sheet {
                 case .register:
                     RegisterView {
-                        
+                        viewModel.updateCardInfo()
                     }
                 case .user:
                     UserView {
