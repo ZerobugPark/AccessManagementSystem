@@ -264,6 +264,11 @@ extension BluetoothManager: CBPeripheralDelegate {
         }
     }
     
+    func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: (any Error)?) {
+        print("RSSI 값: \(RSSI.intValue)")
+        
+    }
+    
 }
 
 // MARK: - Private Method
