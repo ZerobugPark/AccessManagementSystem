@@ -45,6 +45,7 @@ final class BluetoothManager: NSObject, ObservableObject {
     private var rssiMap: [UUID: Int] = [:] // 복구 목록 rssi 딕셔너리
     private var isRestoring = false
     
+    var rssiTimer: Timer?
     
     
     private override init() {
@@ -97,7 +98,7 @@ extension BluetoothManager: CBCentralManagerDelegate {
         
         // 약한 신호 무시
         guard rssiValue >= BluetoothThreshold.rssiThresholdMin else {
-            print("기준 이하 신호 신호 무시:", peripheral.name ?? "Unknown", "→", rssiValue)
+            //print("기준 이하 신호 신호 무시:", peripheral.name ?? "Unknown", "→", rssiValue)
             return
         }
         
@@ -132,19 +133,17 @@ extension BluetoothManager: CBCentralManagerDelegate {
         /// FFE0: HM-10 GATT Service (UART(시리얼) 통신을 위한 서비스)
         peripheral.discoverServices([BluetoothUUID.serviceUART])
         
+        /// RSSI 읽기 요청
+        startRSSIMonitoring(peripheral: peripheral)
+        
         /// 알림 설정
         if UIApplication.shared.applicationState == .background {
-            let content = UNMutableNotificationContent()
-            content.title = "유니온 바이오메트릭스"
-            content.body = "\(peripheral.name ?? "Unknown") 연결 완료"
-            content.sound = .default
-
-            let request = UNNotificationRequest(
-                identifier: "BLEConnect_\(peripheral.identifier.uuidString)",
-                content: content,
-                trigger: nil // 즉시 발송
+            
+            NotificationManager.shared.sendNotification(
+                title: "유니온 바이오메트릭스",
+                body: "\(peripheral.name ?? "Unknown") 연결 완료"
             )
-            UNUserNotificationCenter.current().add(request)
+            
         }
         
         
@@ -264,10 +263,39 @@ extension BluetoothManager: CBPeripheralDelegate {
         }
     }
     
-    func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: (any Error)?) {
-        print("RSSI 값: \(RSSI.intValue)")
+    func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
+        guard error == nil else { return }
         
+        let rssiValue = RSSI.intValue
+
+        
+        // RSSI가 임계값보다 약하면
+        if rssiValue < BluetoothThreshold.rssiThresholdMin {
+            
+            
+            NotificationManager.shared.sendNotification(
+                title: "유니온 바이오메트릭스",
+                body: "연결이 해제되었습니다."
+            )
+            
+            
+            // 연결 해제
+            disconnectPeripheral()
+        }
     }
+    
+    func disconnectPeripheral() {
+        guard connectedPeripheral != nil else { return }
+        
+        // Timer 중지
+        rssiTimer?.invalidate()
+        rssiTimer = nil
+        
+        disconnect()
+   
+    }
+    
+    
     
 }
 
@@ -289,6 +317,17 @@ private extension BluetoothManager {
         print(" 복원 대상:", targetPeripheral.name ?? "Unknown", "| RSSI:", best.value)
         statusMessage = " 복원 중: \(targetPeripheral.name ?? "Unknown")"
         central.connect(targetPeripheral, options: nil)
+    }
+    
+    /// RSSI 기반 연결 해제
+    func startRSSIMonitoring(peripheral: CBPeripheral) {
+        // 백그라운드에서도 작동하는 Timer
+        rssiTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+            peripheral.readRSSI()
+        }
+        
+        // RunLoop에 추가 (백그라운드 대응)
+        RunLoop.current.add(rssiTimer!, forMode: .common)
     }
     
  
