@@ -98,21 +98,6 @@ struct MainView: View {
                     RecordView()
                 }
             }
-            .onAppear { 
-                let contents = ["출근", "퇴근", "출근", "퇴근", "출근", "퇴근", "출근", "퇴근"]
-                for i in 0..<contents.count {
-                    let log = WorkLog(content: contents[i])
-                    context.insert(log)
-                    
-                    do {
-                        try context.save()  // 영구 저장
-                    } catch {
-                        print("저장 실패:", error)
-                    }
-                }
-              
-            }
-            
         }
         
     }
