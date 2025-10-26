@@ -68,12 +68,14 @@ AES128(CBC) 암호화를 적용해 안전한 인증 과정을 제공하며, 출�
 - 백그라운드 상태에서도 RSSI -60dBM 내에 등록된 기기가 있을 경우 자동 연결 및 푸시 알림
 - MCU는 미연결 상태에서 지속적으로 광고를 송출하여 중앙 장치가 자동으로 탐지하도록 구현
 - 출입 로그 확인
+- 블루투스 연결 이후, 별도의 출근 또는 퇴근 미입력 상태에서 RSSI -90dBM 이상일 경우 자동 해제 
+(ex. 태그가 되었지만, 전화 등의 이유로 출근 또는 퇴근을 입력하지 못하는 경우 해제될 때 까지 기다리는 것이 아닌 RSSI 감도 기반 해제)
 
 <table>
   <tr>
     <td align="center" valign="top">
       <b>블루투스 자동 연결</b><br>
-      <img src="https://github.com/user-attachments/assets/b671e711-28ee-4ded-a5a4-6df322b7c42a" width="350"/>
+      <img src="https://github.com/user-attachments/assets/85d9aa70-5938-4ebc-a276-ea9fe6c50c81" width="350"/>
     </td>
     <td align="center" valign="center">
       <b>iOS <-> 출입관리시스템 자동 연결 플로우 차트</b><br>
@@ -81,7 +83,29 @@ AES128(CBC) 암호화를 적용해 안전한 인증 과정을 제공하며, 출�
     </td>
   </tr>
 </table>
-        
+
+<table>
+  <tr>
+    <td align="center" valign="top">
+      <b>백그라운드 상태 연결</b><br>
+      <img src="https://github.com/user-attachments/assets/ffce40d7-4ef8-4490-ad00-3cf82abb3d7b" width="291"/>
+    </td>
+    <td align="center" valign="top">
+      <b>RSSI 감도 기반 연결 해제 </b><br>
+      <img src="https://github.com/user-attachments/assets/b573fbc7-0d71-4669-b7d6-0107c998e741" width="291"/>
+    </td>
+    <td align="center" valign="top">
+      <b>iOS <-> 기록 관리 </b><br>
+      <img src="https://github.com/user-attachments/assets/17e38914-00e3-4dcd-81fb-97ac1e645bb7" width="291"/>
+    </td>
+  </tr>
+</table>
+
+
+
+
+    
+
 <br><br>
 
 ### [사용자 및 카드 등록]
