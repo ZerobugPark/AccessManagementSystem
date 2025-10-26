@@ -88,15 +88,15 @@ AES128(CBC) 암호화를 적용해 안전한 인증 과정을 제공하며, 출�
   <tr>
     <td align="center" valign="top">
       <b>백그라운드 상태 연결</b><br>
-      <img src="https://github.com/user-attachments/assets/ffce40d7-4ef8-4490-ad00-3cf82abb3d7b" width="291"/>
+      <img src="https://github.com/user-attachments/assets/ffce40d7-4ef8-4490-ad00-3cf82abb3d7b" width="280"/>
     </td>
     <td align="center" valign="top">
       <b>RSSI 감도 기반 연결 해제 </b><br>
-      <img src="https://github.com/user-attachments/assets/b573fbc7-0d71-4669-b7d6-0107c998e741" width="291"/>
+      <img src="https://github.com/user-attachments/assets/b573fbc7-0d71-4669-b7d6-0107c998e741" width="280"/>
     </td>
     <td align="center" valign="top">
       <b>iOS <-> 기록 관리 </b><br>
-      <img src="https://github.com/user-attachments/assets/17e38914-00e3-4dcd-81fb-97ac1e645bb7" width="291"/>
+      <img src="https://github.com/user-attachments/assets/17e38914-00e3-4dcd-81fb-97ac1e645bb7" width="280"/>
     </td>
   </tr>
 </table>
