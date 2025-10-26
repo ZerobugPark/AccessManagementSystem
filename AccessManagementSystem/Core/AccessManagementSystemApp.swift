@@ -57,11 +57,11 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             if granted {
-                print("✅ 알림 권한 허용")
+                print("알림 권한 허용")
             } else if let error = error {
-                print("❌ 알림 권한 오류: \(error.localizedDescription)")
+                print("알림 권한 오류: \(error.localizedDescription)")
             } else {
-                print("⚠️ 알림 권한 거부")
+                print("알림 권한 거부")
             }
             
             
@@ -74,11 +74,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
-        
-        print("🔔 willPresent 호출됨! (포어그라운드)")
-        print("   - Title: \(notification.request.content.title)")
-        print("   - Body: \(notification.request.content.body)")
-        
+                
         completionHandler([.banner, .sound, .badge])
     }
     
@@ -107,9 +103,9 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
-                print("❌ 알림 발송 실패: \(error.localizedDescription)")
+                print("알림 발송 실패: \(error.localizedDescription)")
             } else {
-                print("✅ 알림 발송 성공: \(body)")
+                print("알림 발송 성공: \(body)")
             }
         }
     }

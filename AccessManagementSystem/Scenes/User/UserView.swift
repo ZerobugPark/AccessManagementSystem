@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct UserView: View {
-    @Environment(\.dismiss) private var dismiss   // ✅ 모달 닫기용 환경 변수
+    @Environment(\.dismiss) private var dismiss   
     @State private var name = ""
     @State private var department = ""
     @State private var position = ""
@@ -31,7 +31,7 @@ struct UserView: View {
                 HStack {
                     Spacer()
                     Button {
-                        dismiss() // ✅ 모달 닫기
+                        dismiss() 
                     } label: {
                         Image(systemName: "xmark")
                             .imageScale(.medium)
@@ -81,7 +81,7 @@ struct UserView: View {
         .alert("등록 완료", isPresented: $showAlert) {
             Button("확인", role: .cancel) {
                 onCompleted()
-                dismiss() // ✅ 등록 완료 후 자동 닫기 (선택 사항)
+                dismiss() 
             }
         } message: {
             Text("사용자 \(name) 님이 등록되었습니다.")
@@ -107,7 +107,6 @@ private extension UserView {
             position: position,
             cardID: cardID
         )
-        print("regi", user)
         do {
             let encoded = try JSONEncoder().encode(user)
             UserDefaultManager.userInfo = encoded
